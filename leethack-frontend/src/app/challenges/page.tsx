@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Terminal } from '@/components/Terminal';
 import { mockChallenges } from '@/data/mockData';
 import { Challenge } from '@/types';
@@ -38,10 +39,13 @@ export default function ChallengesPage() {
             <h1 className="text-2xl font-bold text-white">
               {selectedChallenge.title}
             </h1>
-            <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+            <Link 
+              href="/challenges/sqlinjection"
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            >
               <Play className="w-4 h-4" />
               Start Challenge
-            </button>
+            </Link>
           </div>
           
           {/* Challenge Stats */}
