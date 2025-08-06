@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:14
+    container_name: leethack-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    ports:
+      - '5432:5432'
+    volumes:
+      - leethack-db-data:/var/lib/postgresql/data
+
+volumes:
+  leethack-db-data: 

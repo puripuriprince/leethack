@@ -1,0 +1,17 @@
+{
+  "name": "leethack-backend",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "services/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=services/user-service",
+    "build": "npm run build --workspaces",
+    "start": "npm run start --workspace=services/user-service"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Backend monorepo for LeetHack"
+} 

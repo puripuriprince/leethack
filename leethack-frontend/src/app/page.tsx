@@ -206,7 +206,7 @@ export default function HomePage() {
                     <Link 
                       href={`/challenges`}
                       className="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center gap-1 transition-colors"
-                    >
+        >
                       Try Now
                       <ArrowRight className="w-4 h-4" />
                     </Link>

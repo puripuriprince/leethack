@@ -71,7 +71,7 @@ export default function RootLayout({
           
           {/* Main content */}
           <div className="relative">
-            {children}
+        {children}
           </div>
         </div>
       </body>
