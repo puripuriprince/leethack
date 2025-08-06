@@ -9,99 +9,9 @@ import Link from 'next/link';
 
 export default function SQLInjectionChallenge() {
   const challenge = mockChallenges.find(c => c.title === "SQL Injection Basics") || mockChallenges[0];
-  const [terminalSession, setTerminalSession] = useState<TerminalSession>(mockTerminalSession);
   const [isConnected, setIsConnected] = useState(true);
 
-  const handleCommand = async (command: string): Promise<string> => {
-    // Execute command and return output directly
-    return await executeCommand(command);
-  };
-
-  const executeCommand = async (command: string): Promise<string> => {
-    // Mock command execution - in real implementation this would call your firecracker VM API
-    const cmd = command.trim().toLowerCase();
-    
-    if (cmd === 'ls') {
-      return `webapp/
-tools/
-scripts/
-README.txt`;
-    } else if (cmd === 'ls -la') {
-      return `total 16
-drwxr-xr-x 5 hacker hacker 4096 Aug  6 17:45 .
-drwxr-xr-x 3 root   root   4096 Aug  6 17:30 ..
-drwxr-xr-x 3 hacker hacker 4096 Aug  6 17:45 webapp
-drwxr-xr-x 2 hacker hacker 4096 Aug  6 17:45 tools
-drwxr-xr-x 2 hacker hacker 4096 Aug  6 17:45 scripts
--rw-r--r-- 1 hacker hacker  156 Aug  6 17:45 README.txt`;
-    } else if (cmd === 'cd webapp') {
-      setTerminalSession(prev => ({
-        ...prev,
-        currentDirectory: '/home/hacker/webapp'
-      }));
-      return '';
-    } else if (cmd === 'pwd') {
-      return terminalSession.currentDirectory;
-    } else if (cmd === 'cat readme.txt') {
-      return `SQL Injection Challenge Environment
-=====================================
-
-Target: http://localhost:8080/login.php
-Goal: Bypass authentication using SQL injection
-
-Files:
-- login.php: Vulnerable login form
-- database.sql: Database schema
-- config.php: Database configuration
-
-Start by examining the login form and try different payloads!`;
-    } else if (cmd.startsWith('curl ') || cmd.includes('localhost:8080')) {
-      return `<html>
-<head><title>Vulnerable Login</title></head>
-<body>
-<h2>Login</h2>
-<form method="POST" action="login.php">
-    Username: <input type="text" name="username"><br><br>
-    Password: <input type="password" name="password"><br><br>
-    <input type="submit" value="Login">
-</form>
-</body>
-</html>`;
-    } else if (cmd === 'help') {
-      return `Available commands:
-ls, ls -la       - list directory contents
-cd <dir>         - change directory
-pwd              - print working directory
-cat <file>       - display file contents
-curl <url>       - make HTTP request
-sqlmap           - automated SQL injection tool
-nmap             - network scanner
-help             - show this help message
-
-Challenge Goal: Find and exploit SQL injection in the web application`;
-    } else if (cmd.includes('sqlmap')) {
-      return `sqlmap 1.7.2
-
-Usage: sqlmap [options]
-
-Target:
-  -u URL, --url=URL   Target URL
-
-Injection:
-  --data=DATA         Data string to be sent through POST
-
-Example: sqlmap -u "http://localhost:8080/login.php" --data="username=admin&password=test"`;
-    } else if (cmd === 'clear') {
-      setTerminalSession(prev => ({
-        ...prev,
-        history: []
-      }));
-      return '';
-    } else {
-      return `bash: ${command}: command not found
-Type 'help' for available commands`;
-    }
-  };
+  // Remove the mock command handler - let EnhancedTerminal handle backend connection directly
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty.toLowerCase()) {
@@ -251,7 +161,6 @@ Type 'help' for available commands`;
         {/* Terminal Content */}
         <div className="flex-1 bg-gray-900">
           <EnhancedTerminal 
-            onCommand={handleCommand}
             isConnected={isConnected}
             initialMessage="SQL Injection Challenge - Type 'help' for available commands"
           />

@@ -27,6 +27,8 @@ export function EnhancedTerminal({
   const [isClient, setIsClient] = useState(false);
   const [currentDirectory, setCurrentDirectory] = useState("~");
   const [isExecuting, setIsExecuting] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionStatus, setSessionStatus] = useState<'initializing' | 'ready' | 'error'>('initializing');
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
   const sessionStartTime = useRef(new Date());
@@ -60,6 +62,57 @@ export function EnhancedTerminal({
 
     return () => clearInterval(interval);
   }, []);
+
+  // Initialize VM session on component mount
+  useEffect(() => {
+    const initializeSession = async () => {
+      try {
+        setSessionStatus('initializing');
+        
+        const response = await fetch('http://localhost:3001/api/terminal/session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            challenge: 'sql-injection'
+          })
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          setSessionId(result.data.sessionId);
+          setSessionStatus('ready');
+          
+          // Add initialization message
+          const initMessage: TerminalCommand = {
+            id: `init-${Date.now()}`,
+            command: '',
+            output: `VM Session initialized: ${result.data.sessionId}\nEnvironment: ${result.data.challenge}\n${initialMessage}`,
+            timestamp: new Date(),
+            exitCode: 0
+          };
+          setTerminalHistory([initMessage]);
+        } else {
+          throw new Error(`Failed to create session: ${response.status}`);
+        }
+      } catch (error) {
+        console.error('Failed to initialize VM session:', error);
+        setSessionStatus('error');
+        
+        const errorMessage: TerminalCommand = {
+          id: `error-${Date.now()}`,
+          command: '',
+          output: `Failed to initialize VM session: ${error}\nUsing fallback mode. Some commands may not work as expected.`,
+          timestamp: new Date(),
+          exitCode: 1
+        };
+        setTerminalHistory([errorMessage]);
+      }
+    };
+
+    initializeSession();
+  }, [initialMessage]);
 
   const handleKeyDown = async (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -177,13 +230,17 @@ Type commands to interact with the challenge environment.`;
     } else {
       // Try to call the backend API
       try {
+        if (!sessionId) {
+          return `Error: VM session not initialized. Please wait for session to start.`;
+        }
+
         const response = await fetch('http://localhost:3001/api/terminal/execute', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            sessionId: 'session-1',
+            sessionId: sessionId,
             command: command
           })
         });
