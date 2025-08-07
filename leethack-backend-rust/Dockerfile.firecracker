@@ -1,0 +1,161 @@
+# Dockerfile for LeetHack Challenge VMs
+# This creates isolated containers that simulate Firecracker VMs
+FROM ubuntu:22.04
+
+# Set non-interactive installation to avoid timezone prompts
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
+# Install security and penetration testing tools
+RUN apt-get update && apt-get install -y \
+    # Basic tools
+    curl \
+    wget \
+    openssh-server \
+    vim \
+    nano \
+    git \
+    net-tools \
+    iproute2 \
+    dnsutils \
+    # Network tools
+    nmap \
+    netcat-openbsd \
+    tcpdump \
+    # Python and scripting
+    python3 \
+    python3-pip \
+    # Web server components
+    apache2 \
+    php \
+    php-mysql \
+    mysql-server \
+    # Basic forensics tools
+    exiftool \
+    file \
+    binutils \
+    bsdmainutils \
+    # Reverse engineering
+    gdb \
+    strace \
+    ltrace \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python security tools
+RUN pip3 install \
+    requests \
+    beautifulsoup4
+
+# Create hacker user
+RUN useradd -m -s /bin/bash hacker && \
+    echo "hacker:hacker" | chpasswd && \
+    usermod -aG sudo hacker
+
+# Configure SSH
+RUN mkdir /var/run/sshd && \
+    echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config && \
+    echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config && \
+    sed -i 's/#Port 22/Port 2222/' /etc/ssh/sshd_config
+
+# Create challenge directories
+RUN mkdir -p /home/hacker/webapp /home/hacker/tools /home/hacker/scripts && \
+    chown -R hacker:hacker /home/hacker
+
+# Create vulnerable web application for SQL injection challenge
+RUN mkdir -p /var/www/html/webapp && \
+    echo '<?php' > /var/www/html/webapp/login.php && \
+    echo '$username = $_GET["username"] ?? "";' >> /var/www/html/webapp/login.php && \
+    echo '$password = $_GET["password"] ?? "";' >> /var/www/html/webapp/login.php && \
+    echo 'if ($username && $password) {' >> /var/www/html/webapp/login.php && \
+    echo '    // Vulnerable SQL query - DO NOT USE IN PRODUCTION' >> /var/www/html/webapp/login.php && \
+    echo '    $query = "SELECT * FROM users WHERE username='\''$username'\'' AND password='\''$password'\''";' >> /var/www/html/webapp/login.php && \
+    echo '    echo "<h3>SQL Query: " . htmlspecialchars($query) . "</h3>";' >> /var/www/html/webapp/login.php && \
+    echo '    if (strpos($username, "'\'' OR '\''1'\''='\''1") !== false || strpos($username, "admin'\''--") !== false) {' >> /var/www/html/webapp/login.php && \
+    echo '        echo "<div style='\''color: green;'\''><h2>SUCCESS! SQL Injection worked!</h2>";' >> /var/www/html/webapp/login.php && \
+    echo '        echo "<p>Flag: LEETHACK{sql_1nj3ct10n_m4st3r}</p></div>";' >> /var/www/html/webapp/login.php && \
+    echo '    } else {' >> /var/www/html/webapp/login.php && \
+    echo '        echo "<div style='\''color: red;'\''><h2>Login Failed</h2></div>";' >> /var/www/html/webapp/login.php && \
+    echo '    }' >> /var/www/html/webapp/login.php && \
+    echo '} else {' >> /var/www/html/webapp/login.php && \
+    echo '    echo "<h2>Vulnerable Login Form</h2>";' >> /var/www/html/webapp/login.php && \
+    echo '    echo "<form method='\''GET'\''>";' >> /var/www/html/webapp/login.php && \
+    echo '    echo "Username: <input type='\''text'\'' name='\''username'\'' placeholder='\''admin'\''><br><br>";' >> /var/www/html/webapp/login.php && \
+    echo '    echo "Password: <input type='\''password'\'' name='\''password'\'' placeholder='\''password'\''><br><br>";' >> /var/www/html/webapp/login.php && \
+    echo '    echo "<button type='\''submit'\''>Login</button>";' >> /var/www/html/webapp/login.php && \
+    echo '    echo "</form>";' >> /var/www/html/webapp/login.php && \
+    echo '    echo "<!-- Hint: Try SQL injection payloads like admin'\''-- or admin'\'' OR '\''1'\''='\''1 -->";' >> /var/www/html/webapp/login.php && \
+    echo '}' >> /var/www/html/webapp/login.php && \
+    echo '?>' >> /var/www/html/webapp/login.php
+
+# Create welcome file
+RUN echo "=== LeetHack SQL Injection Challenge ===" > /home/hacker/README.txt && \
+    echo "" >> /home/hacker/README.txt && \
+    echo "Target: http://localhost:8080/webapp/login.php" >> /home/hacker/README.txt && \
+    echo "Goal: Exploit SQL injection to bypass login" >> /home/hacker/README.txt && \
+    echo "" >> /home/hacker/README.txt && \
+    echo "Available tools:" >> /home/hacker/README.txt && \
+    echo "- curl: Test HTTP requests" >> /home/hacker/README.txt && \
+    echo "- sqlmap: Automated SQL injection" >> /home/hacker/README.txt && \
+    echo "- nmap: Port scanning" >> /home/hacker/README.txt && \
+    echo "" >> /home/hacker/README.txt && \
+    echo "Examples:" >> /home/hacker/README.txt && \
+    echo "curl 'http://localhost:8080/webapp/login.php'" >> /home/hacker/README.txt && \
+    echo "curl 'http://localhost:8080/webapp/login.php?username=admin&password=test'" >> /home/hacker/README.txt && \
+    echo "curl 'http://localhost:8080/webapp/login.php?username=admin%27--&password=anything'" >> /home/hacker/README.txt && \
+    echo "" >> /home/hacker/README.txt && \
+    echo "Good luck, hacker!" >> /home/hacker/README.txt && \
+    chown hacker:hacker /home/hacker/README.txt
+
+# Configure Apache to serve on port 8080
+RUN echo "Listen 8080" >> /etc/apache2/ports.conf && \
+    echo "<VirtualHost *:8080>" > /etc/apache2/sites-available/challenge.conf && \
+    echo "    DocumentRoot /var/www/html" >> /etc/apache2/sites-available/challenge.conf && \
+    echo "    ErrorLog \${APACHE_LOG_DIR}/error.log" >> /etc/apache2/sites-available/challenge.conf && \
+    echo "    CustomLog \${APACHE_LOG_DIR}/access.log combined" >> /etc/apache2/sites-available/challenge.conf && \
+    echo "</VirtualHost>" >> /etc/apache2/sites-available/challenge.conf && \
+    a2ensite challenge.conf
+
+# Create startup script
+RUN echo '#!/bin/bash' > /entrypoint.sh && \
+    echo 'set -e' >> /entrypoint.sh && \
+    echo 'echo "Starting LeetHack Challenge VM..."' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Fix permissions and create necessary directories' >> /entrypoint.sh && \
+    echo 'mkdir -p /var/log/apache2 /var/run/apache2 /var/lock/apache2 /var/run/sshd /var/run/mysqld' >> /entrypoint.sh && \
+    echo 'touch /var/log/apache2/error.log /var/log/apache2/access.log' >> /entrypoint.sh && \
+    echo 'chown -R www-data:www-data /var/log/apache2 /var/run/apache2 /var/lock/apache2' >> /entrypoint.sh && \
+    echo 'chown mysql:mysql /var/run/mysqld /var/lib/mysql' >> /entrypoint.sh && \
+    echo 'chmod 755 /var/log/apache2 /var/run/mysqld /var/run/sshd' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Initialize MySQL data directory if needed' >> /entrypoint.sh && \
+    echo 'if [ ! -d "/var/lib/mysql/mysql" ]; then' >> /entrypoint.sh && \
+    echo '    echo "Initializing MySQL database..."' >> /entrypoint.sh && \
+    echo '    mysqld --initialize-insecure --user=mysql --datadir=/var/lib/mysql >/dev/null 2>&1 || true' >> /entrypoint.sh && \
+    echo 'fi' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Start services in background (suppress error output)' >> /entrypoint.sh && \
+    echo 'echo "Starting services..."' >> /entrypoint.sh && \
+    echo '/usr/sbin/sshd -D >/dev/null 2>&1 &' >> /entrypoint.sh && \
+    echo 'mysqld_safe --user=mysql >/dev/null 2>&1 &' >> /entrypoint.sh && \
+    echo 'apache2ctl -D FOREGROUND >/dev/null 2>&1 &' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Wait for services to initialize' >> /entrypoint.sh && \
+    echo 'sleep 3' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo 'echo "LeetHack Challenge VM Ready!"' >> /entrypoint.sh && \
+    echo 'echo "Challenge: http://localhost:8080/webapp/login.php"' >> /entrypoint.sh && \
+    echo 'echo "User: hacker (password: hacker)"' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Execute the command passed to the container' >> /entrypoint.sh && \
+    echo 'exec "$@"' >> /entrypoint.sh && \
+    chmod +x /entrypoint.sh
+
+# Expose ports
+EXPOSE 2222 8080
+
+# Set entrypoint as root (needed for service startup)
+USER root
+WORKDIR /home/hacker
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["bash", "-c", "while true; do sleep 30; done"]

@@ -1,0 +1,45 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:14
+    container_name: leethack-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DATABASE_USER:-leethack}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-leethack123}
+      POSTGRES_DB: ${DATABASE_NAME:-leethack}
+    ports:
+      - '5432:5432'
+    volumes:
+      - leethack-db-data:/var/lib/postgresql/data
+    networks:
+      - leethack-network
+
+  firecracker-host:
+    build:
+      context: ./leethack-backend-rust
+      dockerfile: Dockerfile.firecracker
+    container_name: leethack-firecracker
+    privileged: true
+    restart: always
+    ports:
+      - '3001:3001'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - firecracker-data:/opt/leethack
+      - ./leethack-backend-rust:/app
+    environment:
+      - RUST_LOG=debug
+      - DATABASE_URL=postgresql://leethack:leethack123@db:5432/leethack
+    depends_on:
+      - db
+    networks:
+      - leethack-network
+
+volumes:
+  leethack-db-data:
+  firecracker-data:
+
+networks:
+  leethack-network:
+    driver: bridge

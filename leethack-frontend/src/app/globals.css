@@ -1,0 +1,183 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@import 'tailwindcss';
+
+* {
+  border-color: #374151;
+}
+
+body {
+  background-color: #111827;
+  color: #f3f4f6;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Terminal-like components */
+.terminal-window {
+  background-color: #111827;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.terminal-header {
+  background-color: #1f2937;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #374151;
+}
+
+.terminal-dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.terminal-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+}
+
+.terminal-content {
+  padding: 1rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  color: #f3f4f6;
+  min-height: 300px;
+}
+
+/* Glass effect */
+.glass {
+  backdrop-filter: blur(12px);
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(to right, #60a5fa, #a855f7, #f97316);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Neon glow effects */
+.neon-blue {
+  text-shadow: 0 0 5px #00d4ff, 0 0 10px #00d4ff, 0 0 15px #00d4ff;
+}
+
+.neon-green {
+  text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00, 0 0 15px #00ff00;
+}
+
+/* Rank badges */
+.rank-newbie { color: #9ca3af; }
+.rank-pupil { color: #4ade80; }
+.rank-specialist { color: #22d3ee; }
+.rank-expert { color: #60a5fa; }
+.rank-candidate { color: #a855f7; }
+.rank-master { color: #facc15; }
+.rank-grandmaster { color: #f87171; }
+.rank-legendary { color: #ef4444; }
+
+/* Difficulty colors */
+.difficulty-easy { color: #4ade80; }
+.difficulty-medium { color: #fb923c; }
+.difficulty-hard { color: #f87171; }
+
+/* Custom scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #4b5563 #111827;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #111827;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* Hover animations */
+.hover-lift {
+  transition: transform 0.2s;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+}
+
+.hover-glow {
+  transition: all 0.3s;
+}
+
+.hover-glow:hover {
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.25);
+}
+
+/* Modern terminal improvements */
+.terminal-smooth {
+  transition: all 0.15s ease-out;
+  }
+
+/* Better scrollbar for terminal */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(75, 85, 99, 0.5) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(75, 85, 99, 0.5);
+  border-radius: 2px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 114, 128, 0.7);
+}
+
+/* Performance optimizations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Fix for Warp-style gray backgrounds */
+.bg-gray-750 {
+  background-color: rgba(55, 65, 81, 0.5);
+}
+
+.bg-gray-850 {
+  background-color: rgba(31, 41, 55, 0.8);
+}
+
+/* Text balance */
+.text-balance {
+  text-wrap: balance;
+}

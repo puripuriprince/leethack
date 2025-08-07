@@ -1,0 +1,10 @@
+# Ignore the target directory inside the Rust backend project
+leethack-backend-rust/target/
+
+# Ignore the Cargo.lock file inside the Rust backend project
+leethack-backend-rust/Cargo.lock
+
+# Ignore the node_modules directory inside the frontend project
+leethack-frontend/node_modules/
+
+node_modules/
